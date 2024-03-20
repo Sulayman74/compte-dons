@@ -8,7 +8,7 @@ export class Donation implements Prisma.DonationCreateInput {
   @ApiProperty()
   @IsNumber()
   amout: number;
-  @ApiProperty({ default: Date.now() })
+  @ApiProperty({ default: new Date().toISOString() })
   createdAt?: string | Date;
   @ApiProperty({ default: false })
   @IsBoolean()

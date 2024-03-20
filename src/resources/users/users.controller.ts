@@ -12,11 +12,13 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
   ApiBadRequestResponse,
+  ApiBody,
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
@@ -29,7 +31,6 @@ export class UsersController {
   @Post()
   @ApiCreatedResponse({
     description: "creation d'un utilisateur ok",
-    type: User,
   })
   @ApiOperation({
     description: 'creation utilisateur',
@@ -39,8 +40,9 @@ export class UsersController {
     description: 'Une erreur est survenue lors de la creation',
   })
   @ApiConflictResponse({
-    description: 'Entrée déjà existante erreur de conflit'
+    description: 'Entrée déjà existante erreur de conflit',
   })
+  @ApiBody({ type: CreateUserDto })
   create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.create(createUserDto);
   }
@@ -49,7 +51,6 @@ export class UsersController {
   @ApiOkResponse({
     description: 'retour des users ok',
     isArray: true,
-    type: User,
   })
   @ApiOperation({
     description: 'Get de tous les users',
@@ -63,7 +64,6 @@ export class UsersController {
   @Get(':id')
   @ApiOkResponse({
     description: "retour de l'utilisateur par son ID",
-    type: User,
   })
   @ApiOperation({
     description: "Get de l'utilisateur par son id unique",
@@ -75,11 +75,20 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @ApiOperation({summary:"UPDATE DATA USER",description:"mise à jour données de l'utilisateur"})
+  @ApiOkResponse({description:"mise à jour des données de l'utilisateur OK"})
+  @ApiNotFoundResponse({ description: 'Aucun utilisateur trouvé' })
+  @ApiBody({type:UpdateUserDto,description:'USERS DATA'})
+  @ApiParam({ name: 'id', description: 'Identifiant de l\'utilisateur à mettre à jour.' })
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'DELETE A USER', description: 'Supprime un utilisateur existant en fonction de son ID.' })
+  @ApiOkResponse({description:"Données de l'utilisateur supprimées correctement"})
+  @ApiNotFoundResponse({ description: 'Aucun utilisateur trouvé' })
+  @ApiParam({ name: 'id', description: 'Identifiant de l\'utilisateur à supprimer.' })
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
