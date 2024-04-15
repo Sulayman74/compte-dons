@@ -15,9 +15,9 @@ export class AuthService {
     private _jwtService: JwtService,
   ) {}
 
-  async signIn(credentials: SignIn): Promise<string> {
+  async signIn(credentials: SignIn): Promise<User | { token: string }> {
     try {
-      const user = await this._prismaService.user.findUniqueOrThrow({
+      const user = await this._prismaService.user.findUnique({
         where: { email: credentials.email },
       });
       // Logique de connexion
@@ -31,28 +31,42 @@ export class AuthService {
       }
 
       // Générer un token JWT avec les informations de l'utilisateur
-      const token = this._jwtService.sign({
+      const payload = {
         sub: user.id,
         firstname: user.firstname,
-      });
+        role : user.role
+      };
+      const token = this._jwtService.sign(payload);
 
-      return token;
+      return { ...user, token };
     } catch (error) {
       console.log(error);
       throw error;
     }
   }
 
-  async signUp(userData: SignUp): Promise<User> {
-    const existingUser = await this._prismaService.user.findUniqueOrThrow({
-      where: { email: userData.email },
+  async signUp(userData: SignUp): Promise<User | { token: string }> {
+    const { email, password } = userData;
+
+    const existingUser = await this._prismaService.user.findUnique({
+      where: { email: email },
     });
+
+    const hashedPassword = await argon2.hash(password);
+
     if (!existingUser) {
       try {
         const newUser = await this._prismaService.user.create({
-          data: userData,
+          data: { ...userData, password: hashedPassword },
         });
-        return newUser;
+        const payload = {
+          sub: newUser.id,
+          firstname: newUser.firstname,
+          role : newUser.role
+        };
+        const token = this._jwtService.sign(payload);
+console.warn('hheloo', newUser,token);
+        return { ...newUser, token };
       } catch (error) {
         console.log(error);
         throw error;

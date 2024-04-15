@@ -24,6 +24,7 @@ export class DonationsService {
           user: { connect: { id: userId } },
         },
       });
+      console.log("Jalo",userId);
       return addDon;
     } catch (error) {
       console.log(error);

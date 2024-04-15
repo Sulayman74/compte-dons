@@ -18,6 +18,8 @@ model User {
   firstname   String
   lastname    String
   email       String     @unique
+  role        Role       @default(USER)
+  action      Action @default(READ)
   password    String
   phoneNumber String
   donation    Donation[]
@@ -39,4 +41,17 @@ model Archive {
   id         Int        @id @default(autoincrement())
   archivedAt DateTime   @default(now())
   donation   Donation[]
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum Action {
+  MANAGE
+  CREATE
+  READ
+  UPDATE
+  DELETE
 }

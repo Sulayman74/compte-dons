@@ -1,18 +1,24 @@
 import * as argon2 from 'argon2';
 
+import { Action, Role } from '@prisma/client';
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { CreateUserDto, SignIn, UpdateUserDto } from './dto';
 
+import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
 import { PrismaService } from '../../prisma/prisma.service';
 import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(private _prismaService: PrismaService) {}
+  constructor(
+    private _prismaService: PrismaService,
+    private _caslAbilityFactory: CaslAbilityFactory,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { email, password } = createUserDto;
@@ -48,7 +54,7 @@ export class UsersService {
     }
   }
 
-  async findAll(): Promise<User[]> {
+  async findAll(user: User): Promise<User[]> {
     const getUsers = await this._prismaService.user.findMany();
     return getUsers;
   }
@@ -59,16 +65,24 @@ export class UsersService {
         id,
       },
     });
-    console.log(`This action returns a #${id} user`);
     return getUser;
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async updateUser(
+    userId: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    console.log('jojojdqsd', updateUserDto);
+    return this._prismaService.user.update({
+      where: { id: userId },
+      data: updateUserDto,
+    });
   }
 
   async remove(id: string) {
-    const deleteUser = await console.log(`This action removes a #${id} user`);
-    return;
+    const deleteUser = await this._prismaService.user.delete({
+      where: { id },
+    });
+    return deleteUser;
   }
 }

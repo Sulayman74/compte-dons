@@ -1,11 +1,16 @@
-import { IsEmail, IsNotEmpty, IsString, IsStrongPassword } from 'class-validator';
+import { $Enums, Prisma } from '@prisma/client';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  IsStrongPassword,
+} from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
-import { Prisma } from '@prisma/client';
 import { User } from '../entities/user.entity';
 
 export class CreateUserDto extends User {
-  @ApiProperty({default:new Date().toISOString()})
+  @ApiProperty({ default: new Date().toISOString() })
   createdAt: Date;
   donation?: Prisma.DonationCreateNestedManyWithoutUserInput;
   @ApiProperty()
@@ -22,5 +27,6 @@ export class CreateUserDto extends User {
   password: string;
   @ApiProperty()
   phoneNumber: string;
+  role: $Enums.Role;
+  action: $Enums.Action;
 }
-

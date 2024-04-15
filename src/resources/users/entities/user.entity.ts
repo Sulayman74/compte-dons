@@ -1,7 +1,7 @@
+import { $Enums, Prisma } from '@prisma/client';
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
-import { Prisma } from '@prisma/client';
 
 export class User implements Prisma.UserCreateInput {
   createdAt?: string | Date;
@@ -22,4 +22,6 @@ export class User implements Prisma.UserCreateInput {
   password: string;
   @ApiProperty()
   phoneNumber: string;
+  role: $Enums.Role;
+  action: $Enums.Action;
 }

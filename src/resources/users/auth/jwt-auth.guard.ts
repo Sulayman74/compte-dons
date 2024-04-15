@@ -1,33 +1,47 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(private readonly _jwtService: JwtService) {}
 
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     // Logique de validation du token JWT dans les requêtes entrantes
     // Si le token est valide, stocker les informations de l'utilisateur dans l'objet req
     const req = context.switchToHttp().getRequest();
 
     // Récupérer le token JWT depuis les en-têtes de la requête
-    const token = req.headers.authorization?.replace('Bearer ', '');
+    const token = this.extractTokenFromHeader(req);
+
 
     if (!token) {
-      return false;
+      throw new UnauthorizedException();
     }
 
     try {
       // Vérifier et décoder le token JWT
-      const decoded = this._jwtService.verify(token);
+      const decoded = await this._jwtService.verifyAsync(token, {
+        secret: process.env.SECRETKEY,
+      });
 
       // Stocker les informations de l'utilisateur dans l'objet req pour une utilisation ultérieure
-      req.user = decoded;
+      req['user'] = decoded;
 
-      return true;
     } catch (error) {
+      console.error(error);
       return false;
     }
+    return true;
+  }
+  private extractTokenFromHeader(request: Request): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
   }
 }

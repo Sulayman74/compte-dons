@@ -45,6 +45,7 @@ export class DonationsController {
     description: 'Une erreur est survenue lors de la creation',
   })
   create(@Body() createDonationDto: CreateDonationDto, @Request() req) {
+    console.log(req.user.id);
     return this.donationsService.create(createDonationDto, req.user.id);
   }
 

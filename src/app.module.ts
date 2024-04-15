@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Module } from '@nestjs/common';
 import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './resources/users/users.module';
+import { CaslModule } from './casl/casl.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -15,7 +16,8 @@ import { UsersModule } from './resources/users/users.module';
     PrismaModule,
     UsersModule,
     ArchivesModule,
-    AuthModule
+    AuthModule,
+    CaslModule
   ],
   controllers: [AppController],
   providers: [AppService],

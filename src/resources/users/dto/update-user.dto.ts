@@ -1,6 +1,7 @@
+import { $Enums, Prisma } from '@prisma/client';
+
 import { CreateUserDto } from './create-user.dto';
 import { PartialType } from '@nestjs/mapped-types';
-import { Prisma } from '@prisma/client';
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
     id: string
@@ -9,5 +10,6 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
     email : string
     password : string
     phoneNumber: string
+    role?: $Enums.Role;
  
 }
