@@ -16,6 +16,7 @@ export class AuthService {
   ) {}
 
   async signIn(credentials: SignIn): Promise<User | { token: string }> {
+    
     try {
       const user = await this._prismaService.user.findUnique({
         where: { email: credentials.email },
@@ -37,7 +38,7 @@ export class AuthService {
         role : user.role
       };
       const token = this._jwtService.sign(payload);
-
+console.log(token);
       return { ...user, token };
     } catch (error) {
       console.log(error);
@@ -65,7 +66,7 @@ export class AuthService {
           role : newUser.role
         };
         const token = this._jwtService.sign(payload);
-console.warn('hheloo', newUser,token);
+
         return { ...newUser, token };
       } catch (error) {
         console.log(error);

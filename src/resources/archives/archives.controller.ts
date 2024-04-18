@@ -1,9 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { ArchivesService } from './archives.service';
 import { CreateArchiveDto } from './dto/create-archive.dto';
 import { UpdateArchiveDto } from './dto/update-archive.dto';
+import { Role } from '@prisma/client';
+import { RoleGuard } from '../users/role.guard';
+import { Roles } from '../users/roles.decorator';
 
 @Controller('archives')
+@UseGuards(RoleGuard)
+@Roles(Role.ADMIN)
 export class ArchivesController {
   constructor(private readonly archivesService: ArchivesService) {}
 

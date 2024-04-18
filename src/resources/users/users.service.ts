@@ -54,7 +54,7 @@ export class UsersService {
     }
   }
 
-  async findAll(user: User): Promise<User[]> {
+  async findAll(): Promise<User[]> {
     const getUsers = await this._prismaService.user.findMany();
     return getUsers;
   }
@@ -73,10 +73,29 @@ export class UsersService {
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
     console.log('jojojdqsd', updateUserDto);
-    return this._prismaService.user.update({
-      where: { id: userId },
-      data: updateUserDto,
-    });
+
+    try {
+      if (updateUserDto.password) {
+        const hashedPassword = await argon2.hash(updateUserDto.password);
+        return this._prismaService.user.update({
+          where: { id: userId },
+          data: { ...updateUserDto, password: hashedPassword },
+        });
+      } else {
+        return this._prismaService.user.update({
+          where: { id: userId },
+          data: updateUserDto,
+        });
+      }
+    } catch (error) {
+      console.error(
+        'Erreur lors de la mise à jour du profil utilisateur :',
+        error,
+      );
+      throw new InternalServerErrorException(
+        'Une erreur est survenue lors de la mise à jour du profil utilisateur.',
+      );
+    }
   }
 
   async remove(id: string) {

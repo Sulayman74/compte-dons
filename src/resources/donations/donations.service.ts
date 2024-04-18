@@ -18,13 +18,13 @@ export class DonationsService {
     userId: string,
   ): Promise<Donation> {
     try {
+      console.log('Jalo', userId);
       const addDon = await this._prismaService.donation.create({
         data: {
           ...createDonationDto,
           user: { connect: { id: userId } },
         },
       });
-      console.log("Jalo",userId);
       return addDon;
     } catch (error) {
       console.log(error);
@@ -57,6 +57,24 @@ export class DonationsService {
     } catch (error) {
       console.log(error);
       throw error;
+    }
+  }
+
+  async findByUserID(userId:string):Promise<Donation[]>{
+    
+    
+    try {
+
+      const findDonationByUser = await this._prismaService.donation.findMany({
+        where : {
+          userId 
+        }
+      })
+      return findDonationByUser
+    } catch (error) {
+      
+      console.error(error);
+        throw new Error("Une erreur est survenue lors de la recherche des dons par ID utilisateur.");
     }
   }
 

@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -32,6 +33,7 @@ import { Action, Role } from '@prisma/client';
 import { Roles } from './roles.decorator';
 import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
 import { ForbiddenError } from '@casl/ability';
+import { Donation } from '../donations/entities/donation.entity';
 
 @ApiTags('Users')
 @UseGuards(JwtAuthGuard)
@@ -44,6 +46,8 @@ export class UsersController {
   ) {}
 
   @Post()
+  @UseGuards(RoleGuard)
+  @Roles(Role.ADMIN)
   @ApiCreatedResponse({
     description: "creation d'un utilisateur ok",
   })
@@ -65,7 +69,7 @@ export class UsersController {
     const user = req.user;
     console.warn(user, 'user from req');
     const ability = this._caslAbilityFactory.createForUser(user);
-    const isAllowed = ability.can(Action.CREATE, user, 'all');
+    const isAllowed = ability.can(Action.MANAGE, user, 'all');
     console.log('Is he Allowed?', isAllowed);
     if (!isAllowed) {
       throw new ForbiddenException('Accès interdit pour toi !!');
@@ -84,9 +88,13 @@ export class UsersController {
     summary: 'GET ALL USERS',
   })
   @ApiNotFoundResponse({ description: 'Aucun utilisateur trouvé' })
-  findAll(@Request() req: any, @Param('id') id: string): Promise<User[]> {
+  findAll(@Request() req: any): Promise<User[]> {
     const user = req.user;
-    return this.usersService.findAll(user);
+    console.warn(user, 'user from req');
+    const ability = this._caslAbilityFactory.createForUser(user);
+    const isAllowed = ability.can(Action.MANAGE, user, 'all');
+    console.log('Is he Allowed?', isAllowed);
+    return this.usersService.findAll();
   }
 
   @Get(':id')
@@ -106,7 +114,7 @@ export class UsersController {
 
   @Patch(':id')
   @UseGuards(RoleGuard)
-  @Roles(Role.ADMIN)
+  // @Roles(Role.ADMIN)
   @ApiOperation({
     summary: 'UPDATE DATA USER',
     description: "mise à jour données de l'utilisateur",
@@ -118,9 +126,27 @@ export class UsersController {
     name: 'id',
     description: "Identifiant de l'utilisateur à mettre à jour.",
   })
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    console.log('Jojo', updateUserDto);
-    return this.usersService.updateUser(id, updateUserDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Request() req: any,
+  ) {
+    try {
+      const user = req.user;
+      console.log('Jojo and user', updateUserDto, user);
+      if (user.sub === id || user.role === Role.ADMIN) {
+        return this.usersService.updateUser(id, updateUserDto);
+      } else {
+        throw new ForbiddenException(
+          "Vous n'êtes pas autorisé à mettre à jour cet utilisateur",
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(
+        "Une erreur est survenue lors de la mise à jour de l'utilisateur",
+      );
+    }
   }
 
   @Delete(':id')
