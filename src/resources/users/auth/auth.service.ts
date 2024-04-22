@@ -7,7 +7,6 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { User } from '../entities/user.entity';
 
-// AuthService pour la gestion de l'authentification et des tokens JWT
 @Injectable()
 export class AuthService {
   constructor(
@@ -16,30 +15,36 @@ export class AuthService {
   ) {}
 
   async signIn(credentials: SignIn): Promise<User | { token: string }> {
-    
     try {
       const user = await this._prismaService.user.findUnique({
         where: { email: credentials.email },
       });
       // Logique de connexion
-      // Si les identifiants sont valides, générer un token JWT et le retourner
-
+    
       if (
         !user ||
         !(await this.validatePassword(credentials.password, user.password))
       ) {
         throw new BadRequestException('Identifiants incorrects');
+      } else {
+          // Si les identifiants sont valides, générer un token JWT et le retourner
+        user.isAuthenticated = true; // Mettre isAuthenticated à true si les identifiants sont valides
+        const payload = {
+          sub: user.id,
+          firstname: user.firstname,
+          role: user.role,
+          isAuthenticated: user.isAuthenticated
+        };
+        // Générer un token JWT avec les informations de l'utilisateur
+        const token = this._jwtService.sign(payload);
+        console.log(token);
+        return { ...user, token };
       }
 
-      // Générer un token JWT avec les informations de l'utilisateur
-      const payload = {
-        sub: user.id,
-        firstname: user.firstname,
-        role : user.role
-      };
-      const token = this._jwtService.sign(payload);
-console.log(token);
-      return { ...user, token };
+
+
+      
+      
     } catch (error) {
       console.log(error);
       throw error;
@@ -63,7 +68,8 @@ console.log(token);
         const payload = {
           sub: newUser.id,
           firstname: newUser.firstname,
-          role : newUser.role
+          role: newUser.role,
+          isAuthenticated: newUser.isAuthenticated
         };
         const token = this._jwtService.sign(payload);
 

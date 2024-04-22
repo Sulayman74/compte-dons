@@ -12,4 +12,5 @@ export class SignIn {
   password: string;
   role : $Enums.Role
   action : $Enums.Action
+  isAuthenticated :boolean
 }

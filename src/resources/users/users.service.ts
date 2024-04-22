@@ -72,7 +72,6 @@ export class UsersService {
     userId: string,
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    console.log('jojojdqsd', updateUserDto);
 
     try {
       if (updateUserDto.password) {
@@ -84,7 +83,7 @@ export class UsersService {
       } else {
         return this._prismaService.user.update({
           where: { id: userId },
-          data: updateUserDto,
+          data: {...updateUserDto},
         });
       }
     } catch (error) {

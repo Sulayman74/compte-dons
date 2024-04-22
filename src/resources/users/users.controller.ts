@@ -36,7 +36,7 @@ import { ForbiddenError } from '@casl/ability';
 import { Donation } from '../donations/entities/donation.entity';
 
 @ApiTags('Users')
-@UseGuards(JwtAuthGuard)
+
 @ApiBearerAuth()
 @Controller('users')
 export class UsersController {
@@ -79,6 +79,7 @@ export class UsersController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   @ApiOkResponse({
     description: 'retour des users ok',
     isArray: true,
@@ -98,7 +99,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   // @ApiBearerAuth()
   @ApiOkResponse({
     description: "retour de l'utilisateur par son ID",
@@ -113,7 +114,8 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @UseGuards(RoleGuard)
+  @UseGuards(JwtAuthGuard)
+  // @UseGuards(RoleGuard)
   // @Roles(Role.ADMIN)
   @ApiOperation({
     summary: 'UPDATE DATA USER',
@@ -133,7 +135,7 @@ export class UsersController {
   ) {
     try {
       const user = req.user;
-      console.log('Jojo and user', updateUserDto, user);
+
       if (user.sub === id || user.role === Role.ADMIN) {
         return this.usersService.updateUser(id, updateUserDto);
       } else {

@@ -22,6 +22,7 @@ model User {
   action      Action @default(READ)
   password    String
   phoneNumber String
+  isAuthenticated Boolean @default(false)
   donation    Donation[]
   createdAt   DateTime   @default(now())
 }
