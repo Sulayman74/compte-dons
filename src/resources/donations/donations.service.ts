@@ -60,21 +60,20 @@ export class DonationsService {
     }
   }
 
-  async findByUserID(userId:string):Promise<Donation[]>{
-    
-    
+  async findByUserID(userId: string): Promise<Donation[]> {
     try {
-
       const findDonationByUser = await this._prismaService.donation.findMany({
-        where : {
-          userId 
-        }
-      })
-      return findDonationByUser
+        where: {
+          userId,
+        },
+        include: { user: true },
+      });
+      return findDonationByUser;
     } catch (error) {
-      
       console.error(error);
-        throw new Error("Une erreur est survenue lors de la recherche des dons par ID utilisateur.");
+      throw new Error(
+        'Une erreur est survenue lors de la recherche des dons par ID utilisateur.',
+      );
     }
   }
 

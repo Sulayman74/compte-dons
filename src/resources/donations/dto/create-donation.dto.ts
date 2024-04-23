@@ -8,7 +8,7 @@ export class CreateDonationDto extends Donation {
   id?: string;
   @ApiProperty()
   @IsNumber()
-  amout: number;
+  amount: number;
   @ApiProperty({ default: new Date().toISOString()})
   createdAt?: string | Date;
   @ApiProperty({ default: false })

@@ -67,7 +67,7 @@ export class DonationsController {
   @ApiNotFoundResponse({ description: 'Pas de dons' })
   async findAll(@Request() req: any): Promise<Donation[]> {
     const user = req.user;
-    console.log('dans les dons je suis le user', user);
+    // console.log('dans les dons je suis le user', user);
 
     let donations: Donation[] = [];
 
@@ -75,7 +75,7 @@ export class DonationsController {
       donations = await this.donationsService.findAll();
     } else {
       donations = await this.donationsService.findByUserID(user.sub);
-      console.log(user.sub);
+      // console.log(user.sub);
     }
     return donations;
   }

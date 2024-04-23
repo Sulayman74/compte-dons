@@ -7,7 +7,7 @@ export class UpdateDonationDto extends PartialType(CreateDonationDto) {
   id?: string;
   @ApiProperty()
   @IsNumber()
-  amout: number;
+  amount: number;
   @ApiProperty({ default: false })
   @IsBoolean()
   archived: boolean;

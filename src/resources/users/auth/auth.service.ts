@@ -41,9 +41,6 @@ export class AuthService {
         return { ...user, token };
       }
 
-
-
-      
       
     } catch (error) {
       console.log(error);
@@ -78,7 +75,9 @@ export class AuthService {
         console.log(error);
         throw error;
       }
-    } else return;
+    } else {
+      throw new Error('Cet utilisateur existe déjà')
+    };
   }
 
   private async validatePassword(
