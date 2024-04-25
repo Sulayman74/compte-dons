@@ -9,12 +9,12 @@ export class CreateDonationDto extends Donation {
   @ApiProperty()
   @IsNumber()
   amount: number;
-  @ApiProperty({ default: new Date().toISOString()})
+  @ApiProperty({ default: new Date().toISOString() })
   createdAt?: string | Date;
   @ApiProperty({ default: false })
   @IsBoolean()
   archived: boolean;
   @ApiProperty()
-  user?: Prisma.UserCreateNestedOneWithoutDonationInput;
-  archiveIn?: Prisma.ArchiveCreateNestedOneWithoutDonationInput;
+  user?: Prisma.UserCreateNestedOneWithoutDonationsInput;
+  archiveIn?: Prisma.ArchiveCreateNestedOneWithoutDonationsInput;
 }

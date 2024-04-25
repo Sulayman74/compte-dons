@@ -18,7 +18,7 @@ export class UsersService {
   constructor(
     private _prismaService: PrismaService,
     private _caslAbilityFactory: CaslAbilityFactory,
-  ) {}
+  ) { }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { email, password } = createUserDto;
@@ -83,7 +83,7 @@ export class UsersService {
       } else {
         return this._prismaService.user.update({
           where: { id: userId },
-          data: {...updateUserDto},
+          data: { ...updateUserDto },
         });
       }
     } catch (error) {

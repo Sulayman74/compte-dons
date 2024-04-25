@@ -43,10 +43,10 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private _caslAbilityFactory: CaslAbilityFactory,
-  ) {}
+  ) { }
 
   @Post()
-  @UseGuards(RoleGuard)
+
   @Roles(Role.ADMIN)
   @ApiCreatedResponse({
     description: "creation d'un utilisateur ok",
@@ -63,22 +63,15 @@ export class UsersController {
   })
   @ApiBody({ type: CreateUserDto })
   create(
-    @Body() createUserDto: CreateUserDto,
-    @Request() req: any,
+    @Body() createUserDto: CreateUserDto
   ): Promise<User> {
-    const user = req.user;
-    console.warn(user, 'user from req');
-    const ability = this._caslAbilityFactory.createForUser(user);
-    const isAllowed = ability.can(Action.MANAGE, user, 'all');
-    console.log('Is he Allowed?', isAllowed);
-    if (!isAllowed) {
-      throw new ForbiddenException('Accès interdit pour toi !!');
-    }
+
 
     return this.usersService.create(createUserDto);
   }
 
   @Get()
+  @UseGuards(RoleGuard)
   @UseGuards(JwtAuthGuard)
   @ApiOkResponse({
     description: 'retour des users ok',

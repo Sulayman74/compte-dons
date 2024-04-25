@@ -14,34 +14,53 @@ datasource db {
 }
 
 model User {
-  id          String     @id @default(uuid())
-  firstname   String
-  lastname    String
-  email       String     @unique
-  role        Role       @default(USER)
-  action      Action @default(READ)
-  password    String
-  phoneNumber String
-  isAuthenticated Boolean @default(false)
+  action          Action         @default(READ)
+  createdAt       DateTime       @default(now())
+  donations       Donation[]
+  email           String         @unique
+  firstname       String
+  id              String         @id @default(uuid())
+  isAuthenticated Boolean        @default(false)
+  lastname        String
+  password        String
+  phoneNumber     String
+  role            Role           @default(USER)
+  destinataires   Destinataire[]
+}
+
+model Destinataire {
+  city        String?
+  country     String?
   donation    Donation[]
-  createdAt   DateTime   @default(now())
+  email       String?
+  firstname   String
+  id          String     @id @default(uuid())
+  isFamily    Boolean
+  lastname    String
+  phoneNumber String?
+  street      String?
+  zipcode     String?
+  user        User?      @relation(fields: [userId], references: [id])
+  userId      String?
 }
 
 model Donation {
-  id        String   @id @default(uuid())
-  amount     Int
-  createdAt DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id])
-  userId    String?
-  archived  Boolean
-  archiveIn Archive? @relation(fields: [archiveId], references: [id])
-  archiveId Int?
+  amount         Int
+  archived       Boolean
+  archiveId      Int?
+  archiveIn      Archive?      @relation(fields: [archiveId], references: [id])
+  createdAt      DateTime      @default(now())
+  destinataire   Destinataire? @relation(fields: [destinataireId], references: [id])
+  destinataireId String
+  id             String        @id @default(uuid())
+  user           User?         @relation(fields: [userId], references: [id])
+  userId         String?
 }
 
 model Archive {
-  id         Int        @id @default(autoincrement())
   archivedAt DateTime   @default(now())
-  donation   Donation[]
+  donations  Donation[]
+  id         Int        @id @default(autoincrement())
 }
 
 enum Role {
@@ -50,9 +69,9 @@ enum Role {
 }
 
 enum Action {
-  MANAGE
   CREATE
+  DELETE
+  MANAGE
   READ
   UPDATE
-  DELETE
 }

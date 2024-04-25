@@ -14,6 +14,6 @@ export class Donation implements Prisma.DonationCreateInput {
   @IsBoolean()
   archived: boolean;
   @ApiProperty()
-  user?: Prisma.UserCreateNestedOneWithoutDonationInput;
-  archiveIn?: Prisma.ArchiveCreateNestedOneWithoutDonationInput;
+  user?: Prisma.UserCreateNestedOneWithoutDonationsInput;
+  archiveIn?: Prisma.ArchiveCreateNestedOneWithoutDonationsInput;
 }

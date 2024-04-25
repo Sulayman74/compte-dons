@@ -22,6 +22,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       this.user.deleteMany(),
       this.archive.deleteMany(),
       this.donation.deleteMany(),
+      this.destinataire.deleteMany(),
     ]);
   }
 }
