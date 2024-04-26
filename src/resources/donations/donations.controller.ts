@@ -14,7 +14,6 @@ import { DonationsService } from './donations.service';
 import { CreateDonationDto } from './dto/create-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
 import {
-  ApiBadGatewayResponse,
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
@@ -30,6 +29,7 @@ import { Donation } from './entities/donation.entity';
 import { JwtAuthGuard } from '../users/auth/jwt-auth.guard';
 import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
 import { Action, Role } from '@prisma/client';
+import { RoleGuard } from '../users/role.guard';
 
 @Controller('donations')
 @UseGuards(JwtAuthGuard)
@@ -59,12 +59,14 @@ export class DonationsController {
   }
 
   @Get()
+  @UseGuards(RoleGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
-    description: 'Recherche de tous les dons',
-    summary: 'GET ALL DONS',
+    description: 'Recherche de tous les dons si role = Admin/ sinon recherche des dons selon id du user connecté',
+    summary: 'GET ALL DONS/OR...',
   })
-  @ApiOkResponse({ description: 'Tous les dons ont été trouvés' })
-  @ApiNotFoundResponse({ description: 'Pas de dons' })
+  @ApiOkResponse({ description: 'Tous les dons ont été trouvés' , isArray: true})
+  @ApiNotFoundResponse({ description: 'Pas encore de dons' })
   async findAll(@Request() req: any): Promise<Donation[]> {
     const user = req.user;
     // console.log('dans les dons je suis le user', user);

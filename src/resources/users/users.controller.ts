@@ -20,11 +20,13 @@ import {
   ApiBody,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
@@ -32,21 +34,18 @@ import { RoleGuard } from './role.guard';
 import { Action, Role } from '@prisma/client';
 import { Roles } from './roles.decorator';
 import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
-import { ForbiddenError } from '@casl/ability';
-import { Donation } from '../donations/entities/donation.entity';
 
 @ApiTags('Users')
-
 @ApiBearerAuth()
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private _caslAbilityFactory: CaslAbilityFactory,
-  ) { }
+  ) {}
 
   @Post()
-
   @Roles(Role.ADMIN)
   @ApiCreatedResponse({
     description: "creation d'un utilisateur ok",
@@ -62,38 +61,41 @@ export class UsersController {
     description: 'Entrée déjà existante erreur de conflit',
   })
   @ApiBody({ type: CreateUserDto })
-  create(
-    @Body() createUserDto: CreateUserDto
-  ): Promise<User> {
-
-
+  create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
   @UseGuards(RoleGuard)
-  @UseGuards(JwtAuthGuard)
+
   @ApiOkResponse({
-    description: 'retour des users ok',
+    description: 'Retour des users OK',
     isArray: true,
   })
   @ApiOperation({
-    description: 'Get de tous les users',
+    description: 'Recherche de tous les users si role = Admin',
     summary: 'GET ALL USERS',
   })
   @ApiNotFoundResponse({ description: 'Aucun utilisateur trouvé' })
-  findAll(@Request() req: any): Promise<User[]> {
+  async findAll(@Request() req: any): Promise<User[]> {
     const user = req.user;
-    console.warn(user, 'user from req');
+    console.warn('user from req', user, 'role', user.role);
     const ability = this._caslAbilityFactory.createForUser(user);
     const isAllowed = ability.can(Action.MANAGE, user, 'all');
     console.log('Is he Allowed?', isAllowed);
-    return this.usersService.findAll();
+
+    if (!isAllowed) {
+      throw new ForbiddenException(
+        "Vous n'avez pas les droits et accès à ces informations",
+      );
+    } else {
+      return await this.usersService.findAll();
+    }
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  // @ApiBearerAuth()
+
   @ApiOkResponse({
     description: "retour de l'utilisateur par son ID",
   })
@@ -107,15 +109,19 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
-  // @UseGuards(RoleGuard)
-  // @Roles(Role.ADMIN)
+  @UseGuards(RoleGuard)
   @ApiOperation({
     summary: 'UPDATE DATA USER',
     description: "mise à jour données de l'utilisateur",
   })
   @ApiOkResponse({ description: "mise à jour des données de l'utilisateur OK" })
   @ApiNotFoundResponse({ description: 'Aucun utilisateur trouvé' })
+  @ApiUnauthorizedResponse({
+    description: "Vous n'êtes pas autorisé à mettre à jour un autre profil",
+  })
+  @ApiForbiddenResponse({
+    description: "Vous n'avez pas accès à cet action par manque de droit",
+  })
   @ApiBody({ type: UpdateUserDto, description: 'USERS DATA' })
   @ApiParam({
     name: 'id',
@@ -138,15 +144,15 @@ export class UsersController {
       }
     } catch (error) {
       console.log(error);
-      throw new BadRequestException(
-        "Une erreur est survenue lors de la mise à jour de l'utilisateur",
+      throw new ForbiddenException(
+        "Vous n'êtes pas autorisé à mettre à jour cet utilisateur",
       );
     }
   }
 
   @Delete(':id')
-  @UseGuards(RoleGuard)
   @Roles(Role.ADMIN)
+  @UseGuards(RoleGuard)
   @ApiOperation({
     summary: 'DELETE A USER',
     description: 'Supprime un utilisateur existant en fonction de son ID.',
@@ -159,7 +165,25 @@ export class UsersController {
     name: 'id',
     description: "Identifiant de l'utilisateur à supprimer.",
   })
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  remove(@Param('id') id: string, @Request() req: any) {
+
+    try {
+      const user = req.user;
+
+      if ( user.role === Role.ADMIN) {
+        return this.usersService.remove(id, req);
+      } else {
+        throw new ForbiddenException(
+          "Vous n'êtes pas autorisé à mettre à jour cet utilisateur",
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      throw new ForbiddenException(
+        "Vous n'êtes pas autorisé à mettre à jour cet utilisateur",
+      );
+    }
+
+    
   }
 }

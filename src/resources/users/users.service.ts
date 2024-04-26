@@ -18,7 +18,7 @@ export class UsersService {
   constructor(
     private _prismaService: PrismaService,
     private _caslAbilityFactory: CaslAbilityFactory,
-  ) { }
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { email, password } = createUserDto;
@@ -72,7 +72,6 @@ export class UsersService {
     userId: string,
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
-
     try {
       if (updateUserDto.password) {
         const hashedPassword = await argon2.hash(updateUserDto.password);
@@ -91,16 +90,29 @@ export class UsersService {
         'Erreur lors de la mise à jour du profil utilisateur :',
         error,
       );
-      throw new InternalServerErrorException(
-        'Une erreur est survenue lors de la mise à jour du profil utilisateur.',
+      throw new ForbiddenException(
+        "Vous n'êtes pas autorisé à mettre à jour cet utilisateur",
       );
     }
   }
 
-  async remove(id: string) {
-    const deleteUser = await this._prismaService.user.delete({
-      where: { id },
-    });
-    return deleteUser;
+  async remove(id: string, req: any) {
+    const user = req.user;
+
+    const ability = this._caslAbilityFactory.createForUser(user);
+    if (!ability.can('delete', 'User')) {
+      throw new ForbiddenException("Vous n'êtes pas autorisé à supprimer cet utilisateur");
+    }
+    try {
+      const deleteUser = await this._prismaService.user.delete({
+        where: { id },
+      });
+      return deleteUser;
+    } catch (error) {
+      console.log(error);
+      throw new ForbiddenException(
+        "Vous n'êtes pas autorisé à mettre à jour cet utilisateur",
+      );
+    }
   }
 }
