@@ -49,7 +49,7 @@ export class DonationsService {
 
   async findOne(id: string): Promise<Donation> {
     try {
-      const findDon = await this._prismaService.donation.findUniqueOrThrow({
+      const findDon = await this._prismaService.donation.findUnique({
         where: { id },
       });
 
@@ -66,7 +66,7 @@ export class DonationsService {
         where: {
           userId,
         },
-        include: { user: true },
+        include: { user: true, destinataire: true },
       });
       return findDonationByUser;
     } catch (error) {
