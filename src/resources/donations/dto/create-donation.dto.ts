@@ -5,16 +5,18 @@ import { Donation } from '../entities/donation.entity';
 import { Prisma } from '@prisma/client';
 
 export class CreateDonationDto extends Donation {
-  id?: string;
+  id: string;
   @ApiProperty()
   @IsNumber()
   amount: number;
   @ApiProperty({ default: new Date().toISOString() })
-  createdAt?: string | Date;
+  createdAt: string | Date;
   @ApiProperty({ default: false })
   @IsBoolean()
   archived: boolean;
   @ApiProperty()
-  user?: Prisma.UserCreateNestedOneWithoutDonationsInput;
+  user: Prisma.UserCreateNestedOneWithoutDonationsInput;
   archiveIn?: Prisma.ArchiveCreateNestedOneWithoutDonationsInput;
+  @ApiProperty()
+  destinataire: Prisma.DestinataireCreateNestedOneWithoutDonationInput;
 }

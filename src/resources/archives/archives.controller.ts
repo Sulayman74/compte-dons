@@ -19,11 +19,11 @@ import { Roles } from '../users/roles.decorator';
 @UseGuards(RoleGuard)
 @Roles(Role.ADMIN)
 export class ArchivesController {
-  constructor(private readonly archivesService: ArchivesService) {}
+  constructor(private readonly archivesService: ArchivesService) { }
 
   @Post()
-  create(@Body() createArchiveDto: CreateArchiveDto) {
-    return this.archivesService.create(createArchiveDto);
+  archivedDonation() {
+    return this.archivesService.archiveDonations()
   }
 
   @Get()

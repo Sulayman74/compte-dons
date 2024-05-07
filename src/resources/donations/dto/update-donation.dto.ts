@@ -1,14 +1,18 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsNumber } from 'class-validator';
 
-import { CreateDonationDto } from './create-donation.dto';
+import { Donation } from '../entities/donation.entity';
+import { Prisma } from '@prisma/client';
 
-export class UpdateDonationDto extends PartialType(CreateDonationDto) {
-  id?: string;
+export class UpdateDonationDto {
+  id: string;
   @ApiProperty()
   @IsNumber()
   amount: number;
-  @ApiProperty({ default: false })
-  @IsBoolean()
-  archived: boolean;
+  updatedAt: Date;
+  archived?: boolean;
+  @ApiProperty()
+  destinataire: Donation
+
+
 }

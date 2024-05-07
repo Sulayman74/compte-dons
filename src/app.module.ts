@@ -1,6 +1,7 @@
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ArchivesModule } from './resources/archives/archives.module';
+import { ArchivesService } from './resources/archives/archives.service';
 import { AuthModule } from './resources/users/auth/auth.module';
 import { CaslModule } from './casl/casl.module';
 import { ConfigModule } from '@nestjs/config';
@@ -8,6 +9,7 @@ import { DestinatairesModule } from './resources/destinataires/destinataires.mod
 import { DonationsModule } from './resources/donations/donations.module';
 import { Module } from '@nestjs/common';
 import { PrismaModule } from './prisma/prisma.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import { UsersModule } from './resources/users/users.module';
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { UsersModule } from './resources/users/users.module';
     DonationsModule,
     PrismaModule,
     UsersModule,
+    ScheduleModule.forRoot(),
+
   ],
   controllers: [AppController],
   providers: [AppService],

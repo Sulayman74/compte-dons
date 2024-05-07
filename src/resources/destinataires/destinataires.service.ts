@@ -2,7 +2,7 @@ import { CreateDestinataireDto, UpdateDestinataireDto } from './dto';
 import { ForbiddenException, HttpStatus, Injectable } from '@nestjs/common';
 
 import { Destinataire } from './entities/destinataire.entity';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class DestinatairesService {
@@ -29,19 +29,42 @@ export class DestinatairesService {
 
   }
 
-  findAll() {
-    return `This action returns all destinataires`;
+  async findAll() {
+    return await this._prisma.destinataire.findMany()
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} destinataire`;
+  async findOne(id: string) {
+    return await this._prisma.destinataire.findUnique({
+      where: { id }
+    })
   }
 
-  update(id: number, updateDestinataireDto: UpdateDestinataireDto) {
-    return `This action updates a #${id} destinataire`;
+  async update(id: string, updateDestinataireDto: UpdateDestinataireDto): Promise<Destinataire> {
+
+
+    try {
+      const profil = await this._prisma.destinataire.update({
+        where: { id },
+        data: { ...updateDestinataireDto }
+      })
+
+      return profil
+    } catch (error) {
+
+      console.error(
+        'Erreur lors de la mise à jour du destinataire :',
+        error,
+      );
+
+      throw new ForbiddenException(
+        "Vous n'êtes pas autorisé à mettre à jour ce destinataire",
+      );
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} destinataire`;
+  remove(id: string): Promise<Destinataire> {
+    return this._prisma.destinataire.delete({
+      where: { id }
+    })
   }
 }

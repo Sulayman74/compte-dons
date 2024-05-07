@@ -2,6 +2,7 @@ import * as argon2 from 'argon2';
 
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { CaslAbilityFactory } from '../../casl/casl-ability.factory/casl-ability.factory'
 import { ConfigModule } from '@nestjs/config';
 import { InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -10,13 +11,15 @@ import { UsersService } from './users.service';
 describe('UsersService', () => {
   let service: UsersService;
   let prismaService: PrismaService;
+  let caslAbilityFactory: CaslAbilityFactory;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule.forRoot({ isGlobal: true })],
-      providers: [UsersService, PrismaService],
+      providers: [UsersService, PrismaService, CaslAbilityFactory],
     }).compile();
     service = module.get<UsersService>(UsersService);
+    caslAbilityFactory = module.get<CaslAbilityFactory>(CaslAbilityFactory); // Obtenez une instance de CaslAbilityFactory
     // prismaService = module.get<PrismaService>(PrismaService);
   });
 
@@ -30,7 +33,7 @@ describe('UsersService', () => {
     const createUserDto: any = {
       email: 'test@example.com',
       password: 'password123',
-    
+
     };
 
     const existingUser = null;
@@ -55,8 +58,10 @@ describe('UsersService', () => {
         create: jest.fn().mockResolvedValue(addUser),
       },
     };
-
-    const usersService = new UsersService(prismaServiceMock as any);
+    const caslAbilityFactoryMock = {
+      createForUser: jest.fn(),
+    };
+    const usersService = new UsersService(prismaServiceMock as any, caslAbilityFactoryMock as any);
 
     // Act
     const result = await usersService.create(createUserDto);
@@ -68,31 +73,34 @@ describe('UsersService', () => {
   });
 
 
-      // Throws an InternalServerErrorException if there is an error while creating a new user
-      it('should throw an InternalServerErrorException when there is an error while creating a new user', async () => {
-        // Arrange
-        const createUserDto: any = {
-          email: 'test@example.com',
-          password: 'password123',
-          firstname: 'John',
-          lastname: 'Doe',
-          phoneNumber: '1234567890',
-        };
-  
-        const existingUser = null;
-  
-        const prismaServiceMock = {
-          user: {
-            findUnique: jest.fn().mockResolvedValue(existingUser),
-            create: jest.fn().mockRejectedValue(new Error('Database error')),
-          },
-        };
-  
-        const usersService = new UsersService(prismaServiceMock as any);
-  
-        // Act and Assert
-        await expect(usersService.create(createUserDto)).rejects.toThrow(
-          InternalServerErrorException,
-        );
-      });
+  // Throws an InternalServerErrorException if there is an error while creating a new user
+  it('should throw an InternalServerErrorException when there is an error while creating a new user', async () => {
+    // Arrange
+    const createUserDto: any = {
+      email: 'test@example.com',
+      password: 'password123',
+      firstname: 'John',
+      lastname: 'Doe',
+      phoneNumber: '1234567890',
+    };
+
+    const existingUser = null;
+
+    const prismaServiceMock = {
+      user: {
+        findUnique: jest.fn().mockResolvedValue(existingUser),
+        create: jest.fn().mockRejectedValue(new Error('Database error')),
+      },
+    };
+    const caslAbilityFactoryMock = {
+      createForUser: jest.fn(),
+    };
+
+    const usersService = new UsersService(prismaServiceMock as any, caslAbilityFactoryMock as any);
+
+    // Act and Assert
+    await expect(usersService.create(createUserDto)).rejects.toThrow(
+      InternalServerErrorException,
+    );
+  });
 });

@@ -1,19 +1,22 @@
-import { IsBoolean, IsNumber } from 'class-validator';
-
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNumber } from 'class-validator';
 import { Prisma } from '@prisma/client';
 
 export class Donation implements Prisma.DonationCreateInput {
-  id?: string;
   @ApiProperty()
   @IsNumber()
   amount: number;
-  @ApiProperty({ default: new Date().toISOString() })
-  createdAt?: string | Date;
-  @ApiProperty({ default: false })
-  @IsBoolean()
-  archived: boolean;
-  @ApiProperty()
-  user?: Prisma.UserCreateNestedOneWithoutDonationsInput;
+  archived?: boolean;
   archiveIn?: Prisma.ArchiveCreateNestedOneWithoutDonationsInput;
+  @ApiProperty({ default: new Date().toISOString() })
+  createdAt: string | Date;
+  @ApiProperty()
+  description?: string;
+  @ApiProperty()
+  destinataire: Prisma.DestinataireCreateNestedOneWithoutDonationInput;
+  id: string;
+  @ApiProperty()
+  updatedAt: string | Date;
+  user: Prisma.UserCreateNestedOneWithoutDonationsInput;
+
 }

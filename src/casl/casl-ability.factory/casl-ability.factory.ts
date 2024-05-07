@@ -29,6 +29,7 @@ export class CaslAbilityFactory {
     } else {
       can(Action.READ, Donation, 'all');
       can(Action.UPDATE, User, { id: user.id });
+      can(Action.READ, User, { id: user.id });
       cannot(Action.DELETE, User);
       cannot(Action.DELETE, Donation, { archived: true });
       cannot(Action.DELETE, Destinataire);

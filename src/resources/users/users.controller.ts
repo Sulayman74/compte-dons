@@ -33,7 +33,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RoleGuard } from './role.guard';
 import { Action, Role } from '@prisma/client';
 import { Roles } from './roles.decorator';
-import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
+import { CaslAbilityFactory } from '../../casl/casl-ability.factory/casl-ability.factory';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -43,7 +43,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private _caslAbilityFactory: CaslAbilityFactory,
-  ) {}
+  ) { }
 
   @Post()
   @Roles(Role.ADMIN)
@@ -79,7 +79,7 @@ export class UsersController {
   @ApiNotFoundResponse({ description: 'Aucun utilisateur trouvé' })
   async findAll(@Request() req: any): Promise<User[]> {
     const user = req.user;
-    console.warn('user from req', user, 'role', user.role);
+    // console.warn('user from req', user, 'role', user.role);
     const ability = this._caslAbilityFactory.createForUser(user);
     const isAllowed = ability.can(Action.MANAGE, user, 'all');
     console.log('Is he Allowed?', isAllowed);
@@ -93,23 +93,39 @@ export class UsersController {
     }
   }
 
-  @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  // @Get(':id')
+  // @UseGuards(JwtAuthGuard)
 
+  // @ApiOkResponse({
+  //   description: "retour de l'utilisateur par son ID",
+  // })
+  // @ApiOperation({
+  //   description: "Get de l'utilisateur par son id unique",
+  //   summary: 'GET ONE USER',
+  // })
+  // @ApiNotFoundResponse({ description: 'Aucun utilisateur trouvé' })
+  // findOne(@Param('id') id: string): Promise<User> {
+  //   return this.usersService.findOne(id);
+  // }
+
+  @Get('profil')
+  @UseGuards(JwtAuthGuard)
   @ApiOkResponse({
-    description: "retour de l'utilisateur par son ID",
+    description: "retour de l'utilisateur par son profil et payload jwt",
   })
   @ApiOperation({
-    description: "Get de l'utilisateur par son id unique",
-    summary: 'GET ONE USER',
+    description: "Get de l'utilisateur par son payload getProfile",
+    summary: 'GET PROFILE',
   })
   @ApiNotFoundResponse({ description: 'Aucun utilisateur trouvé' })
-  findOne(@Param('id') id: string): Promise<User> {
-    return this.usersService.findOne(id);
+  getProfile(@Request() req: any) {
+    // console.log("findOne id service", req.user);
+    return this.usersService.findOne(req.user.sub)
   }
 
   @Patch(':id')
   @UseGuards(RoleGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: 'UPDATE DATA USER',
     description: "mise à jour données de l'utilisateur",
@@ -170,7 +186,7 @@ export class UsersController {
     try {
       const user = req.user;
 
-      if ( user.role === Role.ADMIN) {
+      if (user.role === Role.ADMIN) {
         return this.usersService.remove(id, req);
       } else {
         throw new ForbiddenException(
@@ -184,6 +200,6 @@ export class UsersController {
       );
     }
 
-    
+
   }
 }

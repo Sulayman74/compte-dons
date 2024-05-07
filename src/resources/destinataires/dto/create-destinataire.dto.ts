@@ -15,7 +15,7 @@ export class CreateDestinataireDto extends Destinataire {
     @ApiProperty()
     @IsString()
     firstname: string;
-    id?: string;
+    id: string;
     @ApiProperty({ default: true })
     isFamily: boolean;
     @ApiProperty()

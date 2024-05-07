@@ -1,15 +1,14 @@
 import * as argon2 from 'argon2';
 
-import { Action, Role } from '@prisma/client';
 import {
   ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { CreateUserDto, SignIn, UpdateUserDto } from './dto';
+import { CreateUserDto, UpdateUserDto } from './dto';
 
-import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
+import { CaslAbilityFactory } from '../../casl/casl-ability.factory/casl-ability.factory';
 import { PrismaService } from '../../prisma/prisma.service';
 import { User } from './entities/user.entity';
 
@@ -18,7 +17,7 @@ export class UsersService {
   constructor(
     private _prismaService: PrismaService,
     private _caslAbilityFactory: CaslAbilityFactory,
-  ) {}
+  ) { }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { email, password } = createUserDto;
@@ -60,6 +59,7 @@ export class UsersService {
   }
 
   async findOne(id: string): Promise<User> {
+    // console.log("findOne id service", id);
     const getUser = await this._prismaService.user.findUnique({
       where: {
         id,
@@ -72,6 +72,12 @@ export class UsersService {
     userId: string,
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
+
+    const oldProfile = await this._prismaService.user.findUnique(
+      {
+        where: { id: userId }
+      }
+    )
     try {
       if (updateUserDto.password) {
         const hashedPassword = await argon2.hash(updateUserDto.password);
@@ -82,7 +88,7 @@ export class UsersService {
       } else {
         return this._prismaService.user.update({
           where: { id: userId },
-          data: { ...updateUserDto },
+          data: { ...oldProfile, firstname: updateUserDto.firstname, lastname: updateUserDto.lastname, phoneNumber: updateUserDto.phoneNumber, email: updateUserDto.email },
         });
       }
     } catch (error) {

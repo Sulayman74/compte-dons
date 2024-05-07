@@ -6,12 +6,12 @@ import { RoleGuard } from '../users/role.guard';
 import { Roles } from '../users/roles.decorator';
 import { Action, Role } from '@prisma/client';
 import { JwtAuthGuard } from '../users/auth/jwt-auth.guard';
-import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
+import { CaslAbilityFactory } from '../../casl/casl-ability.factory/casl-ability.factory';
 import { Destinataire } from './entities/destinataire.entity';
+
 
 @Controller('destinataires')
 @ApiTags('Destinataire')
-
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class DestinatairesController {
@@ -44,22 +44,35 @@ export class DestinatairesController {
   }
 
   @Get()
+  @Roles(Role.ADMIN)
   findAll() {
+
     return this.destinatairesService.findAll();
   }
 
   @Get(':id')
+  @Roles(Role.ADMIN)
   findOne(@Param('id') id: string) {
-    return this.destinatairesService.findOne(+id);
+    return this.destinatairesService.findOne(id);
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN)
   update(@Param('id') id: string, @Body() updateDestinataireDto: UpdateDestinataireDto) {
-    return this.destinatairesService.update(+id, updateDestinataireDto);
+    return this.destinatairesService.update(id, updateDestinataireDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.destinatairesService.remove(+id);
+  @Roles(Role.ADMIN)
+  remove(@Param('id') id: string, @Request() req: any) {
+    const user = req.user;
+    console.warn(user, 'user from req');
+    const ability = this._caslAbilityFactory.createForUser(user);
+    const isAllowed = ability.can(Action.MANAGE, user, 'all');
+    console.log('Is he Allowed?', isAllowed);
+    if (!isAllowed) {
+      throw new ForbiddenException('Accès interdit pour toi !!');
+    }
+    return this.destinatairesService.remove(id);
   }
 }
