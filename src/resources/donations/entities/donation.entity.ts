@@ -6,7 +6,7 @@ export class Donation implements Prisma.DonationCreateInput {
   @ApiProperty()
   @IsNumber()
   amount: number;
-  archived?: boolean;
+  archived: boolean;
   archiveIn?: Prisma.ArchiveCreateNestedOneWithoutDonationsInput;
   @ApiProperty({ default: new Date().toISOString() })
   createdAt: string | Date;

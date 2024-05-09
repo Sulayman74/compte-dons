@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -13,6 +13,7 @@ import { DonationsModule } from './resources/donations/donations.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { UsersModule } from './resources/users/users.module';
+
 @Module({
   imports: [
     ArchivesModule,
@@ -24,13 +25,14 @@ import { UsersModule } from './resources/users/users.module';
     PrismaModule,
     UsersModule,
     ScheduleModule.forRoot(),
-
   ],
   controllers: [AppController],
   providers: [AppService, CorsMiddlewareService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(CorsMiddlewareService).forRoutes('*');
+    consumer
+      .apply(CorsMiddlewareService)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }
