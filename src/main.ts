@@ -4,12 +4,6 @@ import { AppModule } from './app.module';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 
-const allowedOrigins = [
-  'http://localhost:4200',
-  'https://front-my-app-dons.vercel.app/home',
-];
-
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 

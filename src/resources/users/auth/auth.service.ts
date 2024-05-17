@@ -73,10 +73,11 @@ export class AuthService {
         return { ...newUser, token };
       } catch (error) {
         console.log(error);
+        
         throw error;
       }
     } else {
-      throw new Error('Cet utilisateur existe déjà')
+      throw new Error('Internal server error')
     };
   }
 

@@ -10,6 +10,7 @@ import {
   Request,
   ForbiddenException,
   BadRequestException,
+  Put,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -43,7 +44,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private _caslAbilityFactory: CaslAbilityFactory,
-  ) { }
+  ) {}
 
   @Post()
   @Roles(Role.ADMIN)
@@ -67,7 +68,6 @@ export class UsersController {
 
   @Get()
   @UseGuards(RoleGuard)
-
   @ApiOkResponse({
     description: 'Retour des users OK',
     isArray: true,
@@ -120,7 +120,7 @@ export class UsersController {
   @ApiNotFoundResponse({ description: 'Aucun utilisateur trouvé' })
   getProfile(@Request() req: any) {
     // console.log("findOne id service", req.user);
-    return this.usersService.findOne(req.user.sub)
+    return this.usersService.findOne(req.user.sub);
   }
 
   @Patch(':id')
@@ -166,6 +166,54 @@ export class UsersController {
     }
   }
 
+  @Put('password/:id')
+  @UseGuards(RoleGuard)
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'UPDATE DATA USER',
+    description: "mise à jour données de l'utilisateur",
+  })
+  @ApiOkResponse({ description: "mise à jour des données de l'utilisateur OK" })
+  @ApiNotFoundResponse({ description: 'Aucun utilisateur trouvé' })
+  @ApiUnauthorizedResponse({
+    description: "Vous n'êtes pas autorisé à mettre à jour un autre profil",
+  })
+  @ApiForbiddenResponse({
+    description: "Vous n'avez pas accès à cet action par manque de droit",
+  })
+  @ApiBody({ type: UpdateUserDto, description: 'USERS DATA' })
+  @ApiParam({
+    name: 'id',
+    description: "Identifiant de l'utilisateur à mettre à jour.",
+  })
+  updatePassword(
+    @Param('id') id: string,
+    @Body() oldPassword: string,
+    newPassword: string,
+    @Request() req: any,
+  ) {
+    try {
+      const user = req.user;
+
+      if (user.sub === id || user.role === Role.ADMIN) {
+        return this.usersService.updateUserPassword(
+          id,
+          oldPassword,
+          newPassword,
+        );
+      } else {
+        throw new ForbiddenException(
+          "Vous n'êtes pas autorisé à mettre à jour cet utilisateur",
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      throw new ForbiddenException(
+        "Vous n'êtes pas autorisé à mettre à jour cet utilisateur",
+      );
+    }
+  }
+
   @Delete(':id')
   @Roles(Role.ADMIN)
   @UseGuards(RoleGuard)
@@ -182,7 +230,6 @@ export class UsersController {
     description: "Identifiant de l'utilisateur à supprimer.",
   })
   remove(@Param('id') id: string, @Request() req: any) {
-
     try {
       const user = req.user;
 
@@ -199,7 +246,5 @@ export class UsersController {
         "Vous n'êtes pas autorisé à mettre à jour cet utilisateur",
       );
     }
-
-
   }
 }

@@ -1,10 +1,13 @@
 import * as argon2 from 'argon2';
 
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from './dto';
 
@@ -17,7 +20,7 @@ export class UsersService {
   constructor(
     private _prismaService: PrismaService,
     private _caslAbilityFactory: CaslAbilityFactory,
-  ) { }
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { email, password } = createUserDto;
@@ -72,23 +75,20 @@ export class UsersService {
     userId: string,
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
-
-    const oldProfile = await this._prismaService.user.findUnique(
-      {
-        where: { id: userId }
-      }
-    )
+    const oldProfile = await this._prismaService.user.findUnique({
+      where: { id: userId },
+    });
     try {
-      if (updateUserDto.password) {
-        const hashedPassword = await argon2.hash(updateUserDto.password);
+      if (updateUserDto) {
         return this._prismaService.user.update({
           where: { id: userId },
-          data: { ...updateUserDto, password: hashedPassword },
-        });
-      } else {
-        return this._prismaService.user.update({
-          where: { id: userId },
-          data: { ...oldProfile, firstname: updateUserDto.firstname, lastname: updateUserDto.lastname, phoneNumber: updateUserDto.phoneNumber, email: updateUserDto.email },
+          data: {
+            ...oldProfile,
+            firstname: updateUserDto.firstname,
+            lastname: updateUserDto.lastname,
+            phoneNumber: updateUserDto.phoneNumber,
+            email: updateUserDto.email,
+          },
         });
       }
     } catch (error) {
@@ -102,12 +102,50 @@ export class UsersService {
     }
   }
 
+  async updateUserPassword(
+    userId: string,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<any> {
+    try {
+      const user = await this._prismaService.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new NotFoundException('Utilisateur non trouvé');
+      }
+
+      const isPasswordValid = await argon2.verify(user.password, oldPassword);
+
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Mot de passe incorrect');
+      }
+
+      if (newPassword.length < 8) {
+        throw new BadRequestException('Le nouveau mot de passe est trop court');
+      }
+      const hashedNewPassword = await argon2.hash(newPassword);
+
+     return await this._prismaService.user.update({
+        where: { id: userId },
+        data: { password: hashedNewPassword },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Erreur lors de la mise à jour du mot de passe',
+      );
+    }
+  }
+
   async remove(id: string, req: any) {
     const user = req.user;
 
     const ability = this._caslAbilityFactory.createForUser(user);
     if (!ability.can('delete', 'User')) {
-      throw new ForbiddenException("Vous n'êtes pas autorisé à supprimer cet utilisateur");
+      throw new ForbiddenException(
+        "Vous n'êtes pas autorisé à supprimer cet utilisateur",
+      );
     }
     try {
       const deleteUser = await this._prismaService.user.delete({

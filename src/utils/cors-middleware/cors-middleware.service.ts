@@ -5,9 +5,9 @@ import { NextFunction, Request, Response } from 'express';
 export class CorsMiddlewareService implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     const allowedOrigins = [
-        'http://localhost:4200',
-        'https://front-my-app-dons.vercel.app/home',
-      ];
+      'http://localhost:4200',
+      'https://front-my-app-dons.vercel.app',
+    ];
     const origin = req.headers.origin as string;
 
     let corsOptions;
@@ -17,9 +17,18 @@ export class CorsMiddlewareService implements NestMiddleware {
       corsOptions = { origin: false };
     }
 
-    res.setHeader('Access-Control-Allow-Origin', corsOptions.origin ? origin : '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.setHeader(
+      'Access-Control-Allow-Origin',
+      corsOptions.origin ? origin : '*',
+    );
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+    );
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+    );
     res.setHeader('Access-Control-Allow-Credentials', 'true');
 
     if (req.method === 'OPTIONS') {
