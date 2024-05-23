@@ -62,6 +62,8 @@ export class ArchivesService {
     }
   }
 
+  // ? Ceci est une tâche cron executer sur mon backend directement ** //
+
   @Cron(CronExpression.EVERY_WEEKEND)
   async handleDonationArchiving(): Promise<void> {
     try {
@@ -71,6 +73,7 @@ export class ArchivesService {
     }
   }
 
+// TODO je vais créer un fichier séparé pour la tâche cron afin de permettre de planifier cette tâche via le serveur (infomaniak en l'occurence) dans utils sous le nom archive-donation-task.js *** //
 
   create(createArchiveDto: CreateArchiveDto) {
     return 'This action adds a new archive';
